@@ -24,6 +24,7 @@ LArHierarchyHelper::FoldingParameters::FoldingParameters() :
     m_foldToLeadingShowers{false},
     m_foldToTier{false},
     m_foldDynamic{false},
+    m_foldNew{false},
     m_cosAngleTolerance{0.9962f},
     m_tier{1}
 {
@@ -35,6 +36,7 @@ LArHierarchyHelper::FoldingParameters::FoldingParameters(const bool foldDynamic,
     m_foldToLeadingShowers{false},
     m_foldToTier{false},
     m_foldDynamic{foldDynamic},
+    m_foldNew{false},
     m_cosAngleTolerance{cosAngleTolerance},
     m_tier{1}
 {
@@ -46,6 +48,7 @@ LArHierarchyHelper::FoldingParameters::FoldingParameters(const int foldingTier) 
     m_foldToLeadingShowers{false},
     m_foldToTier{true},
     m_foldDynamic{false},
+    m_foldNew{false},
     m_cosAngleTolerance{0.9962f},
     m_tier{foldingTier}
 {
@@ -222,6 +225,33 @@ void LArHierarchyHelper::MCHierarchy::FillHierarchy(const MCParticleList &mcPart
                     pNode->FillHierarchy(pChild, foldParameters);
             }
         }
+        ///BEGIN NEW FOLD
+        else if (foldParameters.m_foldNew)
+        {
+        
+            for (const MCParticle *pPrimary : primaries)
+            {
+                MCParticleList leadingParticles, childParticles;
+                this->InterpretHierarchy(pPrimary, leadingParticles, childParticles, foldParameters.m_cosAngleTolerance);
+                CaloHitList allHits;
+                for (const MCParticle *pMCParticle : leadingParticles)
+                {
+                    // ATTN - Not all MC particles will have hits
+                    if (m_mcToHitsMap.find(pMCParticle) != m_mcToHitsMap.end())
+                    {
+                        const CaloHitList &caloHits(m_mcToHitsMap.at(pMCParticle));
+                        allHits.insert(allHits.begin(), caloHits.begin(), caloHits.end());
+                    }
+                }
+
+                Node *pNode{new Node(*this, leadingParticles, allHits)};
+                m_interactions[pRoot].emplace_back(pNode);
+                for (const MCParticle *pChild : childParticles)
+                    pNode->FillHierarchy(pChild, foldParameters);
+            }
+        
+        }
+       ///END NEW FOLD
         else
         {
             // Unfolded and folded to tier > 1 have the same behaviour for primaries

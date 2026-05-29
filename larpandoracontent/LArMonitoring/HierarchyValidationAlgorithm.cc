@@ -26,6 +26,7 @@ HierarchyValidationAlgorithm::HierarchyValidationAlgorithm() :
     m_foldToPrimaries{false},
     m_foldDynamic{false},
     m_foldToLeadingShowers{false},
+    m_foldNew{false},
     m_validateEvent{false},
     m_validateMC{false},
     m_minPurity{0.8f},
@@ -85,6 +86,8 @@ StatusCode HierarchyValidationAlgorithm::Run()
         foldParameters.m_foldDynamic = true;
     else if (m_foldToLeadingShowers)
         foldParameters.m_foldToLeadingShowers = true;
+    else if (m_foldNew)
+        foldParameters.m_foldNew = true;
     const LArHierarchyHelper::MCHierarchy::ReconstructabilityCriteria recoCriteria(
         m_minRecoHits, m_minRecoHitsPerView, m_minRecoGoodViews, m_removeRecoNeutrons);
 
@@ -599,8 +602,9 @@ StatusCode HierarchyValidationAlgorithm::ReadSettings(const TiXmlHandle xmlHandl
 
     PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle, "FoldToPrimaries", m_foldToPrimaries));
     PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle, "FoldDynamic", m_foldDynamic));
-    PANDORA_RETURN_RESULT_IF_AND_IF(
-        STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle, "FoldToLeadingShowers", m_foldToLeadingShowers));
+    PANDORA_RETURN_RESULT_IF_AND_IF( STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle, "FoldToLeadingShowers", m_foldToLeadingShowers));
+
+    PANDORA_RETURN_RESULT_IF_AND_IF( STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle, "FoldNew", m_foldNew));
 
     PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle, "MinPurity", m_minPurity));
     PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle, "MinCompleteness", m_minCompleteness));
