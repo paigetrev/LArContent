@@ -938,6 +938,37 @@ void LArHierarchyHelper::RecoHierarchy::FillHierarchy(const PfoList &pfoList, co
                 }
             }
         }
+        else if(foldParameters.m_foldNew){
+            for (const ParticleFlowObject *pPrimary : primaries)
+            {
+            int pdg{std::abs(pPrimary->GetParticleId())};
+            const bool isShower{pdg == E_MINUS || pdg == PHOTON};
+            if (isShower){
+                PfoList allParticles;
+                LArPfoHelper::GetAllDownstreamPfos(pPrimary, allParticles);
+                CaloHitList showerHits;
+                for (const ParticleFlowObject *pPfo : allParticles){
+                    LArPfoHelper::GetAllCaloHits(pPfo, showerHits);
+                }
+                m_interactions[pRoot].emplace_back(new Node(*this, allParticles, showerHits));
+            }
+          
+            else{
+                PfoList allParticles{pPrimary};
+                CaloHitList trackHits;
+                for (const ParticleFlowObject *pPfo : allParticles){
+                    LArPfoHelper::GetAllCaloHits(pPfo, trackHits);
+                }
+                Node *pNode{new Node(*this, allParticles, trackHits)};
+                m_interactions[pRoot].emplace_back(pNode);
+                
+                const PfoList &children{pPrimary->GetDaughterPfoList()};
+                for (const ParticleFlowObject *pChild : children){
+                    pNode->FillHierarchy(pChild, foldParameters);
+                }
+            }
+        }
+    }
         else
         {
             // Dynamic fold, Unfolded and fold to tier > 1 have the same behaviour for primaries
