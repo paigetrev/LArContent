@@ -103,7 +103,7 @@ private:
     bool m_foldToPrimaries;         ///< Whether or not to fold everything back to primaries
     bool m_foldToLeadingShowers;    ///< Whether or not to fold to leading showers
     bool m_foldDynamic;             ///< Whether or not to fold based on process information
-   // bool m_foldNew;
+    bool m_foldNew;
     float m_minPurity;              ///< The minimum purity for a match to be considered good
     float m_minCompleteness;        ///< The minimum completeness for a match to be considered good
     float m_minMatchCompleteness;   ///< The minimum completeness at which to a PFO should be considered matching at all

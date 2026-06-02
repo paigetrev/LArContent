@@ -228,29 +228,50 @@ void LArHierarchyHelper::MCHierarchy::FillHierarchy(const MCParticleList &mcPart
         ///BEGIN NEW FOLD
         else if (foldParameters.m_foldNew)
         {
-        
+             
             for (const MCParticle *pPrimary : primaries)
             {
+                MCParticleList allParticles{pPrimary};
+                int pdg{std::abs(pPrimary->GetParticleId())};
+                const bool isShower{pdg == E_MINUS || pdg == PHOTON};
+                const bool isNeutron{pdg == NEUTRON};
+                
+                if(isShower || (isNeutron && !m_recoCriteria.m_removeNeutrons))
+                {
+                    LArMCParticleHelper::GetAllDescendentMCParticles(pPrimary, allParticles);
+                    CaloHitList showerHits;
+                    for (const MCParticle *pMCParticle : allParticles)
+                    {
+                        if (m_mcToHitsMap.find(pMCParticle) != m_mcToHitsMap.end())
+                        {
+                        const CaloHitList &caloShowerHits(m_mcToHitsMap.at(pMCParticle));
+                        showerHits.insert(showerHits.begin(), caloShowerHits.begin(), caloShowerHits.end());
+                        }
+                    
+                    }
+                Node *pNode{new Node(*this, allParticles, showerHits)};
+                m_interactions[pRoot].emplace_back(pNode);
+                }
+                else if(!(isShower || isNeutron)){
                 MCParticleList leadingParticles, childParticles;
                 this->InterpretHierarchy(pPrimary, leadingParticles, childParticles, foldParameters.m_cosAngleTolerance);
-                CaloHitList allHits;
+                CaloHitList trackHits;
                 for (const MCParticle *pMCParticle : leadingParticles)
                 {
-                    // ATTN - Not all MC particles will have hits
-                    if (m_mcToHitsMap.find(pMCParticle) != m_mcToHitsMap.end())
-                    {
-                        const CaloHitList &caloHits(m_mcToHitsMap.at(pMCParticle));
-                        allHits.insert(allHits.begin(), caloHits.begin(), caloHits.end());
+                    if (m_mcToHitsMap.find(pMCParticle) != m_mcToHitsMap.end()){
+                        const CaloHitList &caloTrackHits(m_mcToHitsMap.at(pMCParticle));
+                        trackHits.insert(trackHits.begin(), caloTrackHits.begin(), caloTrackHits.end());
+
                     }
                 }
+               Node *pNode{new Node(*this, leadingParticles, trackHits)};
+               m_interactions[pRoot].emplace_back(pNode);
+               for (const MCParticle *pChild : childParticles)
+                   pNode->FillHierarchy(pChild, foldParameters);
+                }
+               }
 
-                Node *pNode{new Node(*this, leadingParticles, allHits)};
-                m_interactions[pRoot].emplace_back(pNode);
-                for (const MCParticle *pChild : childParticles)
-                    pNode->FillHierarchy(pChild, foldParameters);
-            }
-        
-        }
+       }
        ///END NEW FOLD
         else
         {
