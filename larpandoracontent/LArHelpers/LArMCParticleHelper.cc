@@ -117,6 +117,20 @@ bool LArMCParticleHelper::IsCosmicRay(const MCParticle *const pMCParticle)
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
+bool LArMCParticleHelper::IsPiZeroChild(const MCParticle *const pMCParticle)
+    {
+        const MCParticleList parentList{pMCParticle->GetParentList()};
+        if(!parentList.empty())
+        {
+            const MCParticle *const pParent{parentList.front()};
+            return (pParent->GetParticleId() == 111);
+        
+        }
+        return false;
+    }
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
 bool LArMCParticleHelper::IsEM(const MCParticle *const pMCParticle)
 {
     const int pdg{std::abs(pMCParticle->GetParticleId())};
@@ -219,7 +233,6 @@ int LArMCParticleHelper::GetHierarchyTier(const pandora::MCParticle *const pMCPa
 bool LArMCParticleHelper::IsVisible(const MCParticle *const pMCParticle)
 {
     const int absoluteParticleId(std::abs(pMCParticle->GetParticleId()));
-
     if ((E_MINUS == absoluteParticleId) || (MU_MINUS == absoluteParticleId) || (PI_PLUS == absoluteParticleId) || (K_PLUS == absoluteParticleId) ||
         (SIGMA_MINUS == absoluteParticleId) || (SIGMA_PLUS == absoluteParticleId) || (HYPERON_MINUS == absoluteParticleId) ||
         (PROTON == absoluteParticleId) || (PHOTON == absoluteParticleId) || (NEUTRON == absoluteParticleId))
