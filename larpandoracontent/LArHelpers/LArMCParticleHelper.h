@@ -119,9 +119,8 @@ public:
      *@return true if the MC particle is a child of a pi zero, false otherwise
      */
     
-     static bool IsPiZeroChild(const pandora::MCParticle *const pMCParticle);
-
-
+    static bool IsNeutralChild(const pandora::MCParticle *const pMCParticle);
+    
     /**
      *  @brief  Return true if passed a photon or electorn/position
      */

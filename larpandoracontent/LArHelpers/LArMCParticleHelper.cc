@@ -117,19 +117,22 @@ bool LArMCParticleHelper::IsCosmicRay(const MCParticle *const pMCParticle)
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-bool LArMCParticleHelper::IsPiZeroChild(const MCParticle *const pMCParticle)
+bool LArMCParticleHelper::IsNeutralChild(const MCParticle *const pMCParticle)
     {
         const MCParticleList parentList{pMCParticle->GetParentList()};
         if(!parentList.empty())
         {
             const MCParticle *const pParent{parentList.front()};
-            return (pParent->GetParticleId() == 111);
+            const int parentParticleId(pParent->GetParticleId());
+            if (parentParticleId == 111 || parentParticleId == 310 || parentParticleId == 130 || parentParticleId == 421 || parentParticleId == 3122)
+            return true;
         
         }
         return false;
     }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
+
 
 bool LArMCParticleHelper::IsEM(const MCParticle *const pMCParticle)
 {
@@ -438,8 +441,8 @@ const MCParticle *LArMCParticleHelper::GetPrimaryMCParticle(const MCParticle *co
     for (MCParticleVector::const_reverse_iterator iter = mcVector.rbegin(), iterEnd = mcVector.rend(); iter != iterEnd; ++iter)
     {
         const MCParticle *const pNextParticle = *iter;
-
-        if (LArMCParticleHelper::IsVisible(pNextParticle))
+       
+       if (LArMCParticleHelper::IsVisible(pNextParticle))
             return pNextParticle;
     }
 
